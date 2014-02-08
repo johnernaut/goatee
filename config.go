@@ -1,4 +1,4 @@
-package config
+package goatee
 
 import (
 	"encoding/json"

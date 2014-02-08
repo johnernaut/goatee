@@ -2,7 +2,6 @@ package goatee
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/johnernaut/goatee/config"
 	"log"
 	"net/http"
 )
@@ -70,7 +69,7 @@ func (h *sockethub) Run() {
 			for c := range h.connections {
 				select {
 				case c.send <- m:
-					if config.DEBUG {
+					if DEBUG {
 						log.Printf("Broadcasting: %s", string(m))
 					}
 				default:
@@ -91,7 +90,7 @@ func NotificationHub(host string) error {
 	log.Println("Starting websocket server on: ", host)
 
 	if err := http.ListenAndServe(host, nil); err != nil {
-		return error
+		return err
 	}
 
 	return nil
