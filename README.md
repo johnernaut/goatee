@@ -75,6 +75,9 @@ func main() {
 </html>
 ```
 
+## Tests
+WIP
+
 ## Authors
 - [johnernaut](https://github.com/johnernaut)
 - you
