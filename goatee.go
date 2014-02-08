@@ -1,12 +1,12 @@
-package main
+package goatee
 
 import (
 	"github.com/johnernaut/goatee/config"
 	"github.com/johnernaut/goatee/goatee"
 )
 
-func main() {
-	client := goatee.NewRedisClient(config.Config.Redis.Host, "achannel")
+func CreateServer(redisub string) {
+	client := goatee.NewRedisClient(config.Config.Redis.Host, redisub)
 
 	defer client.Close()
 
