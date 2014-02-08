@@ -83,7 +83,7 @@ func (h *sockethub) Run() {
 	}
 }
 
-func NewNotificationHub(host string) {
+func NotificationHub(host string) error {
 	go H.Run()
 
 	http.HandleFunc("/", WsHandler)
@@ -91,6 +91,8 @@ func NewNotificationHub(host string) {
 	log.Println("Starting websocket server on: ", host)
 
 	if err := http.ListenAndServe(host, nil); err != nil {
-		log.Fatal("ListenAndServe: ", err.Error())
+		return error
 	}
+
+	return nil
 }
