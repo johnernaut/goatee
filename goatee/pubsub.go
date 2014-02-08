@@ -2,6 +2,7 @@ package goatee
 
 import (
 	"github.com/garyburd/redigo/redis"
+	"github.com/johnernaut/goatee/config"
 	"log"
 	"sync"
 	"time"
@@ -24,7 +25,7 @@ type Client interface {
 	Receive() (message Message)
 }
 
-func NewRedisClient(host string) *RedisClient {
+func NewRedisClient(host, sub string) *RedisClient {
 	conn, err := redis.Dial("tcp", host)
 
 	if err != nil {
@@ -34,6 +35,9 @@ func NewRedisClient(host string) *RedisClient {
 	pubsub, _ := redis.Dial("tcp", host)
 
 	client := RedisClient{conn, redis.PubSubConn{pubsub}, sync.Mutex{}}
+
+	log.Println("Subscribed to Redis on: ", host)
+
 	go func() {
 		for {
 			time.Sleep(200 * time.Millisecond)
@@ -44,6 +48,8 @@ func NewRedisClient(host string) *RedisClient {
 	}()
 
 	go client.PubsubHub()
+
+	client.Subscribe(sub)
 
 	return &client
 }
@@ -69,9 +75,10 @@ func (client *RedisClient) PubsubHub() {
 	for {
 		message := client.Receive()
 		if message.Type == "message" {
-			log.Println("Calling broadcast")
 			H.Broadcast <- []byte(message.Data)
-			log.Printf("Received: %s", message.Data)
+			if config.DEBUG {
+				log.Printf("Received: %s", message.Data)
+			}
 		}
 	}
 }

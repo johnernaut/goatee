@@ -2,6 +2,7 @@ package goatee
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/johnernaut/goatee/config"
 	"log"
 	"net/http"
 )
@@ -66,10 +67,12 @@ func (h *sockethub) Run() {
 			delete(h.connections, c)
 			close(c.send)
 		case m := <-h.Broadcast:
-			log.Println("Broadcasting...")
 			for c := range h.connections {
 				select {
 				case c.send <- m:
+					if config.DEBUG {
+						log.Printf("Broadcasting: %s", string(m))
+					}
 				default:
 					delete(h.connections, c)
 					close(c.send)

@@ -7,8 +7,11 @@ import (
 	"os"
 )
 
+var DEBUG = false
+
 func getEnv() string {
-	if os.Getenv("GO_ENV") == "" {
+	if os.Getenv("GO_ENV") == "" || os.Getenv("GO_ENV") == "development" {
+		DEBUG = true
 		return "development"
 	} else {
 		return os.Getenv("GO_ENV")

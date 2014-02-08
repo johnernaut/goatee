@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	client := goatee.NewRedisClient(config.Config.Redis.Host)
+	client := goatee.NewRedisClient(config.Config.Redis.Host, "achannel")
 
 	defer client.Close()
 
