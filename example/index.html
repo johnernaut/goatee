@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head><title>YERP</title></head>
+  <body>
+    <h1>Websocket Messages:</h1>
+    <ul id="ws">
+    </ul>
+  </body>
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script>
+    var ws = new WebSocket("ws://localhost:1235/");
+    ws.onopen = function() {
+      console.log('opened!');
+    }
+    ws.onclose = function(e) {
+      console.log('closed!' + e.code);
+    }
+    ws.onerror = function(error) {
+      console.log("Error: " + error);
+    }
+    ws.onmessage = function(e) {
+      $('#ws').append('<li>' + e.data + '</li>');
+    }
+  </script>
+</html>
