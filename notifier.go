@@ -12,6 +12,24 @@ type connection struct {
 	send chan []byte
 }
 
+type sockethub struct {
+	// registered connection
+	connections map[*connection]bool
+	// inbound messages from connections
+	Broadcast chan []byte
+	// register requests from connection
+	register chan *connection
+	// unregister request from connection
+	unregister chan *connection
+}
+
+var H = sockethub{
+	Broadcast:   make(chan []byte),
+	register:    make(chan *connection),
+	unregister:  make(chan *connection),
+	connections: make(map[*connection]bool),
+}
+
 func (c *connection) writer() {
 	for message := range c.send {
 		err := c.ws.WriteJSON(string(message))
@@ -19,7 +37,6 @@ func (c *connection) writer() {
 			log.Printf("Error in writer: ", err.Error())
 		}
 	}
-
 	c.ws.Close()
 }
 
@@ -37,24 +54,6 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	H.register <- c
 	//defer func() { H.unregister <- c }()
 	go c.writer()
-}
-
-type sockethub struct {
-	// registered connection
-	connections map[*connection]bool
-	// inbound messages from connections
-	Broadcast chan []byte
-	// register requests from connection
-	register chan *connection
-	// unregister request from connection
-	unregister chan *connection
-}
-
-var H = sockethub{
-	Broadcast:   make(chan []byte),
-	register:    make(chan *connection),
-	unregister:  make(chan *connection),
-	connections: make(map[*connection]bool),
 }
 
 func (h *sockethub) Run() {
@@ -84,14 +83,7 @@ func (h *sockethub) Run() {
 
 func NotificationHub(host string) error {
 	go H.Run()
-
 	http.HandleFunc("/", WsHandler)
-
 	log.Println("Starting websocket server on: ", host)
-
-	if err := http.ListenAndServe(host, nil); err != nil {
-		return err
-	}
-
-	return nil
+	return http.ListenAndServe(host, nil)
 }

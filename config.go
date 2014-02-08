@@ -7,17 +7,6 @@ import (
 	"os"
 )
 
-var DEBUG = false
-
-func getEnv() string {
-	if os.Getenv("GO_ENV") == "" || os.Getenv("GO_ENV") == "development" {
-		DEBUG = true
-		return "development"
-	} else {
-		return os.Getenv("GO_ENV")
-	}
-}
-
 type configuration struct {
 	Redis Redis
 	Web   Web
@@ -31,17 +20,27 @@ type Web struct {
 	Host string
 }
 
-var Config = new(configuration)
+var (
+	DEBUG  = false
+	Config = new(configuration)
+)
+
+func getEnv() string {
+	env := os.Getenv("GO_ENV")
+	if env == "" || env == "development" {
+		DEBUG = true
+		return "development"
+	}
+	return env
+}
 
 func init() {
 	file, err := ioutil.ReadFile("config/" + getEnv() + ".json")
-
 	if err != nil {
 		log.Fatalf("Error parsing config: %s", err.Error())
 	}
 
 	err = json.Unmarshal(file, &Config)
-
 	if err != nil {
 		log.Fatalf("Error parsing json: %s", err.Error())
 	}

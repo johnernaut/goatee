@@ -1,14 +1,14 @@
 package main
 
 import (
-    "github.com/johnernaut/goatee"
-    "log"
+	"github.com/johnernaut/goatee"
+	"log"
 )
 
 func main() {
-    err := goatee.CreateServer("achannel")
+	err := goatee.CreateServer("achannel")
 
-    if err != nil {
-        log.Fatal("Error: ", err.Error())
-    }
+	if err != nil {
+		log.Fatal("Error: ", err.Error())
+	}
 }
