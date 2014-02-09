@@ -3,6 +3,8 @@ goatee
 
 A Redis-backed notification server written in Go.
 
+[![Build Status](https://travis-ci.org/johnernaut/goatee.png?branch=master)](https://travis-ci.org/johnernaut/goatee)
+
 ##Installation
 `go get github.com/johnernaut/goatee`
 
