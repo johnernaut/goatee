@@ -79,7 +79,7 @@ func main() {
 With **goatee** running and your web browser connected to the socket, you should now be able to test message sending from Redis to your client (browser).  Run `redis-cli` and publish a message to the channel you subscribed to in your Go server.  E.x. `publish 'mychannel' 'mymessage'`
 
 ## Tests
-WIP
+`go test github.com/johnernaut/goatee`
 
 ## Authors
 - [johnernaut](https://github.com/johnernaut)

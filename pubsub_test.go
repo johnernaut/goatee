@@ -5,5 +5,6 @@ import (
 )
 
 func TestPubsubHub(t *testing.T) {
-	setup(t)
+	client := setup(t)
+	defer client.Close()
 }
