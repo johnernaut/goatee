@@ -1,7 +1,8 @@
 package goatee
 
 func CreateServer(redisub string) error {
-	client, err := NewRedisClient(Config.Redis.Host, redisub)
+	conf := LoadConfig("config/")
+	client, err := NewRedisClient(conf.Redis.Host, redisub)
 	if err != nil {
 		return err
 	}
@@ -11,5 +12,5 @@ func CreateServer(redisub string) error {
 	// client.Publish("supdood", "a message from golang")
 	// client.Subscribe("supdood")
 
-	return NotificationHub(Config.Web.Host)
+	return NotificationHub(conf.Web.Host)
 }

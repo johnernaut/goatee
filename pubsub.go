@@ -33,7 +33,10 @@ func NewRedisClient(host, sub string) (*RedisClient, error) {
 
 	pubsub, _ := redis.Dial("tcp", host)
 	client := RedisClient{conn, redis.PubSubConn{pubsub}, sync.Mutex{}}
-	log.Println("Subscribed to Redis on: ", host)
+
+	if DEBUG {
+		log.Println("Subscribed to Redis on: ", host)
+	}
 
 	go func() {
 		for {

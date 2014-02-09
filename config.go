@@ -34,8 +34,8 @@ func getEnv() string {
 	return env
 }
 
-func init() {
-	file, err := ioutil.ReadFile("config/" + getEnv() + ".json")
+func LoadConfig(path string) *configuration {
+	file, err := ioutil.ReadFile(path + getEnv() + ".json")
 	if err != nil {
 		log.Fatalf("Error parsing config: %s", err.Error())
 	}
@@ -44,4 +44,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("Error parsing json: %s", err.Error())
 	}
+
+	return Config
 }
