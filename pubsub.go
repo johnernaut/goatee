@@ -24,7 +24,7 @@ type Client interface {
 	Receive() (message Message)
 }
 
-func NewRedisClient(host, sub string) (*RedisClient, error) {
+func NewRedisClient(host string, sub []string) (*RedisClient, error) {
 	conn, err := redis.Dial("tcp", host)
 	if err != nil {
 		log.Printf("Error dialing redis pubsub: %s", err)
@@ -48,7 +48,10 @@ func NewRedisClient(host, sub string) (*RedisClient, error) {
 	}()
 
 	go client.PubsubHub()
-	client.Subscribe(sub)
+
+	for _, k := range sub {
+		client.Subscribe(k)
+	}
 	return &client, nil
 }
 
