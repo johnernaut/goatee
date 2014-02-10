@@ -6,7 +6,7 @@ import (
 
 type testData struct {
 	host    string
-	subchan string
+	subchan []string
 }
 
 func setup(t *testing.T) *RedisClient {
@@ -17,7 +17,7 @@ func setup(t *testing.T) *RedisClient {
 }
 
 func setupRedisConnection(t *testing.T) *RedisClient {
-	data := testData{host: ":6379", subchan: "c1"}
+	data := testData{host: ":6379", subchan: []string{"c1", "c2"}}
 	client, err := NewRedisClient(data.host, data.subchan)
 	if err != nil {
 		t.Errorf("Error creating Redis client: %s", err)
