@@ -5,6 +5,8 @@ A Redis-backed notification server written in Go.
 
 [![Build Status](https://travis-ci.org/johnernaut/goatee.png?branch=master)](https://travis-ci.org/johnernaut/goatee)
 
+**Note:** This project is *alphaware*.  For the time being, it's API is bound to change as features are continually added and enhancements are made.
+
 ##Installation
 `go get github.com/johnernaut/goatee`
 
@@ -40,7 +42,8 @@ import (
 )
 
 func main() {
-    err := goatee.CreateServer("achannel") // pass in the redis channel you'd like to subscribe to
+    // subscribe to one or many redis channels
+    err := goatee.CreateServer([]string{"achannel", "anotherchannel"})
 
     if err != nil {
         log.Fatal("Error: ", err.Error())
