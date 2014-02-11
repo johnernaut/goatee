@@ -32,7 +32,7 @@ var H = sockethub{
 
 func (c *connection) writer() {
 	for message := range c.send {
-		err := c.ws.WriteJSON(string(message))
+		err := c.ws.WriteMessage(1, message)
 		if err != nil {
 			log.Printf("Error in writer: ", err.Error())
 		}
