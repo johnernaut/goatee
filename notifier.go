@@ -53,7 +53,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	c := &connection{send: make(chan []byte, 256), ws: ws}
 	H.register <- c
 	//defer func() { H.unregister <- c }()
-	go c.writer()
+	c.writer()
 }
 
 func (h *sockethub) Run() {
