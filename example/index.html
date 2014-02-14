@@ -8,18 +8,13 @@
   </body>
   <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
   <script>
-    var ws = new WebSocket("ws://localhost:1235/");
-    ws.onopen = function() {
-      console.log('opened!');
-    }
-    ws.onclose = function(e) {
-      console.log('closed!' + e.code);
-    }
-    ws.onerror = function(error) {
-      console.log("Error: " + error);
-    }
-    ws.onmessage = function(e) {
-      $('#ws').append('<li>' + e.data + '</li>');
-    }
+    (function poll() {
+      console.log("Polling...");
+      $.ajax({ url: "http://localhost:1235", success: function(data) {
+          console.log("Data: " + data);
+      }, error: function(x, t, e) {
+        console.log("Error: " + t + e);
+      }, complete: poll, timeout: 30000 });
+    })();
   </script>
 </html>

@@ -2,8 +2,10 @@ package goatee
 
 import (
 	"github.com/gorilla/websocket"
+	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 type connection struct {
@@ -35,15 +37,34 @@ func (c *connection) writer() {
 		err := c.ws.WriteMessage(1, message)
 		if err != nil {
 			log.Printf("Error in writer: ", err.Error())
+			break
 		}
 	}
 	c.ws.Close()
 }
 
+func LongPoll(w http.ResponseWriter, r *http.Request) {
+	c := &connection{send: make(chan []byte, 256)}
+	H.register <- c
+
+	log.Println(len(H.connections))
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	for m := range H.connections {
+		select {
+		case <-time.After(10e9):
+			H.unregister <- c
+			log.Println("Resulting connections: ", len(H.connections))
+		case msg := <-m.send:
+			io.WriteString(w, string(msg))
+		}
+	}
+}
+
 func WsHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := websocket.Upgrade(w, r, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
-		http.Error(w, "Not a websocket handshake", 400)
+		// http.Error(w, "Not a websocket handshake", 400)
+		LongPoll(w, r)
 		return
 	} else if err != nil {
 		log.Printf("WsHandler error: ", err.Error())
