@@ -35,6 +35,7 @@ func (c *connection) writer() {
 		err := c.ws.WriteMessage(1, message)
 		if err != nil {
 			log.Printf("Error in writer: ", err.Error())
+			break
 		}
 	}
 	c.ws.Close()
