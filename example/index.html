@@ -8,13 +8,22 @@
   </body>
   <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
   <script>
-    (function poll() {
-      console.log("Polling...");
-      $.ajax({ url: "http://localhost:1235", success: function(data) {
-          console.log("Data: " + data);
-      }, error: function(x, t, e) {
-        console.log("Error: " + t + e);
-      }, complete: poll, timeout: 30000 });
-    })();
+    $(document).ready(function() {
+      (function longPoll(){
+        console.log("Polling...");
+        $.ajax({
+            url: "http://localhost:1235/",
+            success: function(data){
+              $('#ws').append("<li>" + data + "</li>");
+            },
+            error: function(x, s, t) {
+              console.log("Error: " + s + " " + t)
+            },
+            type: "GET",
+            complete: longPoll,
+            timeout: 30000 // timeout every thirty seconds
+        });
+      })();
+    });
   </script>
 </html>

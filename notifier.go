@@ -15,7 +15,7 @@ type connection struct {
 }
 
 type sockethub struct {
-	// registered connection
+	// registered connections
 	connections map[*connection]bool
 	// inbound messages from connections
 	Broadcast chan []byte
@@ -37,6 +37,7 @@ func (c *connection) writer() {
 		err := c.ws.WriteMessage(1, message)
 		if err != nil {
 			log.Printf("Error in writer: ", err.Error())
+			H.unregister <- c
 			break
 		}
 	}
@@ -47,21 +48,25 @@ func LongPoll(w http.ResponseWriter, r *http.Request) {
 	c := &connection{send: make(chan []byte, 256)}
 	H.register <- c
 
-	log.Println(len(H.connections))
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	for m := range H.connections {
-		select {
-		case <-time.After(10e9):
-			H.unregister <- c
-			log.Println("Resulting connections: ", len(H.connections))
-		case msg := <-m.send:
-			io.WriteString(w, string(msg))
-		}
+
+	cn, _ := w.(http.CloseNotifier)
+
+	select {
+	case <-time.After(30e9):
+		io.WriteString(w, "Timeout!\n")
+		H.unregister <- c
+	case <-cn.CloseNotify():
+		H.unregister <- c
+	case msg := <-c.send:
+		io.WriteString(w, string(msg))
+		H.unregister <- c
 	}
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := websocket.Upgrade(w, r, nil, 1024, 1024)
+
 	if _, ok := err.(websocket.HandshakeError); ok {
 		// http.Error(w, "Not a websocket handshake", 400)
 		LongPoll(w, r)
@@ -73,7 +78,8 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 
 	c := &connection{send: make(chan []byte, 256), ws: ws}
 	H.register <- c
-	//defer func() { H.unregister <- c }()
+
+	defer func() { H.unregister <- c }()
 	c.writer()
 }
 
@@ -81,6 +87,7 @@ func (h *sockethub) Run() {
 	for {
 		select {
 		case c := <-h.register:
+			log.Println("Connection created.")
 			h.connections[c] = true
 		case c := <-h.unregister:
 			delete(h.connections, c)
@@ -104,7 +111,7 @@ func (h *sockethub) Run() {
 
 func NotificationHub(host string) error {
 	go H.Run()
-	http.HandleFunc("/", WsHandler)
-	log.Println("Starting websocket server on: ", host)
+	http.HandleFunc("/", LongPoll)
+	log.Println("Starting server on: ", host)
 	return http.ListenAndServe(host, nil)
 }
