@@ -12,7 +12,7 @@
       (function longPoll(){
         console.log("Polling...");
         $.ajax({
-            url: "http://localhost:1235/",
+            url: "http://localhost:1235/?" + (new Date().getTime()),
             success: function(data){
               $('#ws').append("<li>" + data + "</li>");
             },
