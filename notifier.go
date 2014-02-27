@@ -87,7 +87,9 @@ func (h *sockethub) Run() {
 	for {
 		select {
 		case c := <-h.register:
-			log.Println("Connection created.")
+			if DEBUG {
+				log.Println("Connection created.")
+			}
 			h.connections[c] = true
 		case c := <-h.unregister:
 			delete(h.connections, c)
@@ -111,7 +113,7 @@ func (h *sockethub) Run() {
 
 func NotificationHub(host string) error {
 	go h.Run()
-	http.HandleFunc("/", LongPoll)
+	http.HandleFunc("/", WsHandler)
 	log.Println("Starting server on: ", host)
 	return http.ListenAndServe(host, nil)
 }
