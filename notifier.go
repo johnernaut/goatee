@@ -18,15 +18,15 @@ type sockethub struct {
 	// registered connections
 	connections map[*connection]bool
 	// inbound messages from connections
-	Broadcast chan []byte
+	broadcast chan []byte
 	// register requests from connection
 	register chan *connection
 	// unregister request from connection
 	unregister chan *connection
 }
 
-var H = sockethub{
-	Broadcast:   make(chan []byte),
+var h = sockethub{
+	broadcast:   make(chan []byte),
 	register:    make(chan *connection),
 	unregister:  make(chan *connection),
 	connections: make(map[*connection]bool),
@@ -37,7 +37,7 @@ func (c *connection) writer() {
 		err := c.ws.WriteMessage(1, message)
 		if err != nil {
 			log.Printf("Error in writer: ", err.Error())
-			H.unregister <- c
+			h.unregister <- c
 			break
 		}
 	}
@@ -46,7 +46,7 @@ func (c *connection) writer() {
 
 func LongPoll(w http.ResponseWriter, r *http.Request) {
 	c := &connection{send: make(chan []byte, 256)}
-	H.register <- c
+	h.register <- c
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -55,12 +55,12 @@ func LongPoll(w http.ResponseWriter, r *http.Request) {
 	select {
 	case <-time.After(30e9):
 		io.WriteString(w, "Timeout!\n")
-		H.unregister <- c
+		h.unregister <- c
 	case <-cn.CloseNotify():
-		H.unregister <- c
+		h.unregister <- c
 	case msg := <-c.send:
 		io.WriteString(w, string(msg))
-		H.unregister <- c
+		h.unregister <- c
 	}
 }
 
@@ -77,9 +77,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := &connection{send: make(chan []byte, 256), ws: ws}
-	H.register <- c
+	h.register <- c
 
-	defer func() { H.unregister <- c }()
+	defer func() { h.unregister <- c }()
 	c.writer()
 }
 
@@ -92,12 +92,12 @@ func (h *sockethub) Run() {
 		case c := <-h.unregister:
 			delete(h.connections, c)
 			close(c.send)
-		case m := <-h.Broadcast:
+		case m := <-h.broadcast:
 			for c := range h.connections {
 				select {
 				case c.send <- m:
 					if DEBUG {
-						log.Printf("Broadcasting: %s", string(m))
+						log.Printf("broadcasting: %s", string(m))
 					}
 				default:
 					delete(h.connections, c)
@@ -110,7 +110,7 @@ func (h *sockethub) Run() {
 }
 
 func NotificationHub(host string) error {
-	go H.Run()
+	go h.Run()
 	http.HandleFunc("/", LongPoll)
 	log.Println("Starting server on: ", host)
 	return http.ListenAndServe(host, nil)

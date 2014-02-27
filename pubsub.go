@@ -75,7 +75,7 @@ func (client *RedisClient) PubsubHub() {
 	for {
 		message := client.Receive()
 		if message.Type == "message" {
-			H.Broadcast <- []byte(message.Data)
+			h.broadcast <- []byte(message.Data)
 			if DEBUG {
 				log.Printf("Received: %s", message.Data)
 			}
