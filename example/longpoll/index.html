@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head><title>YERP</title></head>
+  <body>
+    <h1>Longpoll Messages:</h1>
+    <ul id="ws">
+    </ul>
+  </body>
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      (function longPoll(){
+        console.log("Polling...");
+        $.ajax({
+            url: "http://localhost:1235/?" + (new Date().getTime()),
+            success: function(data){
+              $('#ws').append("<li>" + data + "</li>");
+            },
+            error: function(x, s, t) {
+              console.log("Error: " + s + " " + t)
+            },
+            type: "GET",
+            complete: longPoll,
+            timeout: 30000 // timeout every thirty seconds
+        });
+      })();
+    });
+  </script>
+</html>
