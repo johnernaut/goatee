@@ -13,7 +13,7 @@ A Redis-backed notification server written in Go.
 `import "github.com/johnernaut/goatee"`
 
 ##Usage
-**goatee** works by listening on a channel via [Redis Pub/Sub](http://redis.io/topics/pubsub) and then sending the received message to connected clients via [WebSockets](http://en.wikipedia.org/wiki/WebSocket).
+**goatee** works by listening on a channel via [Redis Pub/Sub](http://redis.io/topics/pubsub) and then sending the received message to connected clients via [WebSockets](http://en.wikipedia.org/wiki/WebSocket) and has fallback support for **long polling**.
 
 ### Configuration
 **goatee** will look for a JSON configuration file in a `config` folder at the root of your project with the following names based on your environment: `development.json`, `production.json`, `etc`.  By default `config/development.json` will be used but you can also specify a `GO_ENV` environment variable and the name of that will be used instead.
