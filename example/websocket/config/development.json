@@ -1,8 +1,0 @@
-{
-  "redis": {
-    "host": "localhost:6379"
-  },
-  "web": {
-    "host": "localhost:1235"
-  }
-}

@@ -8,12 +8,6 @@ import (
 	"time"
 )
 
-type connection struct {
-	ws *websocket.Conn
-	// buffered channel of outbound messages
-	send chan []byte
-}
-
 type sockethub struct {
 	// registered connections
 	connections map[*connection]bool
@@ -30,18 +24,6 @@ var h = sockethub{
 	register:    make(chan *connection),
 	unregister:  make(chan *connection),
 	connections: make(map[*connection]bool),
-}
-
-func (c *connection) writer() {
-	for message := range c.send {
-		err := c.ws.WriteMessage(1, message)
-		if err != nil {
-			log.Printf("Error in writer: ", err.Error())
-			h.unregister <- c
-			break
-		}
-	}
-	c.ws.Close()
 }
 
 func LongPoll(w http.ResponseWriter, r *http.Request) {
@@ -87,9 +69,6 @@ func (h *sockethub) Run() {
 	for {
 		select {
 		case c := <-h.register:
-			if DEBUG {
-				log.Println("Connection created.")
-			}
 			h.connections[c] = true
 		case c := <-h.unregister:
 			delete(h.connections, c)

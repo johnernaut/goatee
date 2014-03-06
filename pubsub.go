@@ -20,7 +20,6 @@ type RedisClient struct {
 }
 
 type Client interface {
-	Publish(channel, message string)
 	Receive() (message Message)
 }
 
@@ -65,19 +64,13 @@ func (client *RedisClient) Receive() Message {
 	return Message{}
 }
 
-func (client *RedisClient) Publish(channel, message string) {
-	client.Lock()
-	client.conn.Send("PUBLISH", channel, message)
-	client.Unlock()
-}
-
 func (client *RedisClient) PubsubHub() {
 	for {
 		message := client.Receive()
 		if message.Type == "message" {
 			h.broadcast <- []byte(message.Data)
 			if DEBUG {
-				log.Printf("Received: %s", message.Data)
+				log.Printf("Received: %s", message)
 			}
 		}
 	}
