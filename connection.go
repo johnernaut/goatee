@@ -15,7 +15,7 @@ func (c *connection) writer() {
 	for message := range c.send {
 		err := c.ws.WriteMessage(1, message)
 		if err != nil {
-			log.Printf("Error in writer: ", err.Error())
+			log.Printf("Error in writer: %s", err.Error())
 			h.unregister <- c
 			break
 		}
