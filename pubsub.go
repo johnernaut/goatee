@@ -1,8 +1,10 @@
 package goatee
 
 import (
+	"encoding/json"
 	"github.com/garyburd/redigo/redis"
 	"log"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -10,7 +12,13 @@ import (
 type Message struct {
 	Type    string
 	Channel string
-	Data    string
+	Data    []byte
+}
+
+type Data struct {
+	ChannelName string `json:"channel_name"`
+	Payload     string `json:"payload"`
+	CreatedAt   string `json:"created_at"`
 }
 
 type RedisClient struct {
@@ -57,18 +65,24 @@ func NewRedisClient(host string, sub []string) (*RedisClient, error) {
 func (client *RedisClient) Receive() Message {
 	switch message := client.PubSubConn.Receive().(type) {
 	case redis.Message:
-		return Message{"message", message.Channel, string(message.Data)}
+		return Message{"message", message.Channel, message.Data}
 	case redis.Subscription:
-		return Message{message.Kind, message.Channel, string(message.Count)}
+		return Message{message.Kind, message.Channel, []byte(strconv.Itoa(message.Count))}
 	}
 	return Message{}
 }
 
 func (client *RedisClient) PubsubHub() {
+	data := Data{}
 	for {
 		message := client.Receive()
 		if message.Type == "message" {
-			h.broadcast <- []byte(message.Data)
+			err := json.Unmarshal(message.Data, &data)
+			if err != nil {
+				log.Panicln("Error parsing payload JSON: ", err)
+			}
+
+			h.broadcast <- []byte(data.Payload)
 			if DEBUG {
 				log.Printf("Received: %s", message)
 			}
