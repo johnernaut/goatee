@@ -62,7 +62,8 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	h.register <- c
 
 	defer func() { h.unregister <- c }()
-	c.writer()
+	go c.writer()
+	c.reader()
 }
 
 func (h *sockethub) Run() {

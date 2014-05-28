@@ -5,10 +5,19 @@ import (
 	"log"
 )
 
+type WSClient struct {
+	Channel string `json:"channel"`
+	Action  string `json:"action"`
+	Date    string `json:"date"`
+	Payload string `json:"payload"`
+	Token   string `json:"token"`
+}
+
 type connection struct {
-	sid  string
-	ws   *websocket.Conn
-	send chan []byte
+	sid    string
+	ws     *websocket.Conn
+	send   chan []byte
+	client WSClient
 }
 
 func (c *connection) writer() {
@@ -21,4 +30,21 @@ func (c *connection) writer() {
 		}
 	}
 	c.ws.Close()
+}
+
+func (c *connection) reader() {
+	for {
+		var client WSClient
+		err := c.ws.ReadJSON(&client)
+		if err != nil {
+			log.Println("[ERROR] we done messed up. ", err)
+			break
+		}
+
+		if DEBUG {
+			log.Println("client type is:", client)
+		}
+
+		c.client = client
+	}
 }
