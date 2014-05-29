@@ -12,22 +12,23 @@ type sockethub struct {
 	// registered connections
 	connections map[*connection]bool
 	// inbound messages from connections
-	broadcast chan []byte
+	broadcast chan *Data
 	// register requests from connection
 	register chan *connection
 	// unregister request from connection
 	unregister chan *connection
+	rclient    *RedisClient
 }
 
 var h = sockethub{
-	broadcast:   make(chan []byte),
+	broadcast:   make(chan *Data),
 	register:    make(chan *connection),
 	unregister:  make(chan *connection),
 	connections: make(map[*connection]bool),
 }
 
 func LongPoll(w http.ResponseWriter, r *http.Request) {
-	c := &connection{send: make(chan []byte, 256)}
+	c := &connection{send: make(chan *Data)}
 	h.register <- c
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -41,7 +42,7 @@ func LongPoll(w http.ResponseWriter, r *http.Request) {
 	case <-cn.CloseNotify():
 		h.unregister <- c
 	case msg := <-c.send:
-		io.WriteString(w, string(msg))
+		io.WriteString(w, msg.Payload)
 		h.unregister <- c
 	}
 }
@@ -58,7 +59,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := &connection{send: make(chan []byte, 256), ws: ws}
+	c := &connection{send: make(chan *Data), ws: ws}
 	h.register <- c
 
 	defer func() { h.unregister <- c }()
@@ -79,7 +80,7 @@ func (h *sockethub) Run() {
 				select {
 				case c.send <- m:
 					if DEBUG {
-						log.Printf("broadcasting: %s", string(m))
+						log.Printf("broadcasting: %s", m.Payload)
 					}
 				default:
 					delete(h.connections, c)

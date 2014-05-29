@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/acmacalister/goatee"
+	"github.com/johnernaut/goatee"
 	"html/template"
 	"log"
 	"net/http"
@@ -18,7 +18,7 @@ func main() {
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("index.html")
+	tmpl, err := template.ParseFiles("chan1.html")
 	if err != nil {
 		log.Fatal(err)
 	}

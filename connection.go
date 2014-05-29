@@ -16,17 +16,19 @@ type WSClient struct {
 type connection struct {
 	sid    string
 	ws     *websocket.Conn
-	send   chan []byte
+	send   chan *Data
 	client WSClient
 }
 
 func (c *connection) writer() {
 	for message := range c.send {
-		err := c.ws.WriteMessage(1, message)
-		if err != nil {
-			log.Printf("Error in writer: %s", err.Error())
-			h.unregister <- c
-			break
+		if c.client.Channel == message.Channel {
+			err := c.ws.WriteMessage(1, []byte(message.Payload))
+			if err != nil {
+				log.Printf("Error in writer: %s", err.Error())
+				h.unregister <- c
+				break
+			}
 		}
 	}
 	c.ws.Close()
@@ -34,17 +36,25 @@ func (c *connection) writer() {
 
 func (c *connection) reader() {
 	for {
-		var client WSClient
-		err := c.ws.ReadJSON(&client)
+		var wclient WSClient
+		err := c.ws.ReadJSON(&wclient)
 		if err != nil {
-			log.Println("[ERROR] we done messed up. ", err)
 			break
 		}
 
 		if DEBUG {
-			log.Println("client type is:", client)
+			log.Println("client type is:", wclient)
 		}
 
-		c.client = client
+		c.client = wclient
+
+		switch wclient.Action {
+		case "bind":
+			h.rclient.Subscribe(wclient.Channel)
+		case "unbind":
+			h.rclient.Unsubscribe(wclient.Channel)
+		}
 	}
+
+	c.ws.Close()
 }

@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <title>YERP</title>
+    <style type="text/css">
+    html {
+        overflow: hidden;
+    }
+
+    body {
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: gray;
+    }
+
+    #ws {
+        background: white;
+        margin: 0;
+        padding: 0.5em 0.5em 0.5em 0.5em;
+        position: absolute;
+        top: 0.5em;
+        left: 0.5em;
+        right: 0.5em;
+        bottom: 3em;
+        overflow: auto;
+    }
+
+    #form {
+        padding: 0 0.5em 0 0.5em;
+        margin: 0;
+        position: absolute;
+        bottom: 1em;
+        left: 0px;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    </style>
+  </head>
+  <body>
+    <h1>Websocket Messages:</h1>
+    <ul id="ws">
+    </ul>
+
+    <form id="form">
+      <input type="submit" value="Send" />
+      <input type="text" id="msg" size="64"/>
+    </form>
+  </body>
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script>
+    $(function() {
+
+      var ws;
+      var msg = $("#msg");
+      var log = $("#log");
+
+      function appendLog(msg) {
+          var d = log[0]
+          var doScroll = d.scrollTop == d.scrollHeight - d.clientHeight;
+          msg.appendTo(log)
+          if (doScroll) {
+              d.scrollTop = d.scrollHeight - d.clientHeight;
+          }
+      }
+
+      $("#form").submit(function() {
+        if (!ws) {
+            return false;
+        }
+        if (!msg.val()) {
+            return false;
+        }
+
+        ws.send(messageFormat(msg.val()));
+        msg.val("");
+        return false
+      });
+
+      function messageFormat(msg) {
+        now = new Date();
+        messageObject = {
+          channel: "chan2",
+          action: "bind",
+          date: new Date(now.getTime()),
+          payload: msg,
+          token: "token yo"
+        }
+        return JSON.stringify(messageObject);
+      }
+
+      var ws = new WebSocket("ws://localhost:1235/");
+      if(ws) {
+        ws.onopen = function() {
+          console.log('opened!');
+        }
+        ws.onclose = function(e) {
+          console.log('closed!' + e.code);
+        }
+        ws.onerror = function(error) {
+          console.log("Error: " + error);
+        }
+        ws.onmessage = function(e) {
+          $('#ws').append('<li>' + e.data + '</li>');
+        }
+      } else {
+        $(document).ready(function() {
+          (function longPoll(){
+            console.log("Polling...");
+            $.ajax({
+                url: "http://localhost:1235/?" + (new Date().getTime()),
+                success: function(data){
+                  $('#ws').append("<li>" + data + "</li>");
+                },
+                error: function(x, s, t) {
+                  console.log("Error: " + s + " " + t)
+                },
+                type: "GET",
+                complete: longPoll,
+                timeout: 30000 // timeout every thirty seconds
+            });
+          })();
+        });
+      }
+    });
+  </script>
+</html>

@@ -16,9 +16,9 @@ type Message struct {
 }
 
 type Data struct {
-	ChannelName string `json:"channel_name"`
-	Payload     string `json:"payload"`
-	CreatedAt   string `json:"created_at"`
+	Channel   string `json:"channel"`
+	Payload   string `json:"payload"`
+	CreatedAt string `json:"created_at"`
 }
 
 type RedisClient struct {
@@ -56,9 +56,13 @@ func NewRedisClient(host string, sub []string) (*RedisClient, error) {
 
 	go client.PubsubHub()
 
+	// subscribe to default channels
 	for _, k := range sub {
 		client.Subscribe(k)
 	}
+
+	h.rclient = &client
+
 	return &client, nil
 }
 
@@ -82,7 +86,7 @@ func (client *RedisClient) PubsubHub() {
 				log.Panicln("Error parsing payload JSON: ", err)
 			}
 
-			h.broadcast <- []byte(data.Payload)
+			h.broadcast <- &data
 			if DEBUG {
 				log.Printf("Received: %s", message)
 			}
