@@ -62,6 +62,7 @@ func NewRedisClient(host string, sub []string) (*RedisClient, error) {
 	}
 
 	h.rclient = &client
+	h.rconn = conn
 
 	return &client, nil
 }
@@ -81,9 +82,10 @@ func (client *RedisClient) PubsubHub() {
 	for {
 		message := client.Receive()
 		if message.Type == "message" {
+			log.Println(string(message.Data))
 			err := json.Unmarshal(message.Data, &data)
 			if err != nil {
-				log.Panicln("Error parsing payload JSON: ", err)
+				log.Println("Error parsing payload JSON: ", err)
 			}
 
 			h.broadcast <- &data

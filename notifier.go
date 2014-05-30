@@ -1,6 +1,7 @@
 package goatee
 
 import (
+	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/websocket"
 	"io"
 	"log"
@@ -18,6 +19,7 @@ type sockethub struct {
 	// unregister request from connection
 	unregister chan *connection
 	rclient    *RedisClient
+	rconn      redis.Conn
 }
 
 var h = sockethub{

@@ -1,6 +1,7 @@
 package goatee
 
 import (
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	"log"
 )
@@ -53,6 +54,16 @@ func (c *connection) reader() {
 			h.rclient.Subscribe(wclient.Channel)
 		case "unbind":
 			h.rclient.Unsubscribe(wclient.Channel)
+		case "message":
+			d, err := json.Marshal(wclient)
+			if err != nil {
+				log.Println("Error marsahling json for publish: ", err)
+			}
+
+			_, err = h.rconn.Do("PUBLISH", wclient.Channel, d)
+			if err != nil {
+				log.Println("Error publishing message: ", err)
+			}
 		}
 	}
 
