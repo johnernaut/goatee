@@ -1,26 +1,17 @@
 'use strict';
 
-var goatee = ('undefined' === typeof goatee ? {} : goatee);
-goatee.VERSION = '0.1.0';
-
 (function() {
-
-    // socket instance
-    goatee.socket = {};
-
     // goatee
-    (function() {
-        goatee.connect = function(host) {
-            this.host = host;
+    function goatee(host) {
+        this.host = host;
 
-            if (WebSocket != 'undefined') {
-                 var socket = new goatee.Socket(this.host);
-                 return socket;
-            } else {
-                console.log("Your browser doesn't support websockets.");
-            }
-        };
-    })('object' === typeof goatee ? goatee : (this.goatee = {}), this);
+        if (WebSocket != 'undefined') {
+             var socket = new goatee.Socket(this.host);
+             return socket;
+        } else {
+            console.log("Your browser doesn't support websockets.");
+        }
+    };
 
     // goatee.util
     (function() {
@@ -64,6 +55,7 @@ goatee.VERSION = '0.1.0';
             this.connect(host);
         };
 
+        // Connect to a websocket on the given host
         Socket.prototype.connect = function(host) {
             goatee.socket = new WebSocket(host);
             goatee.socket.onopen = function() {
@@ -71,6 +63,8 @@ goatee.VERSION = '0.1.0';
             };
         };
 
+        // Bind to the websocket channel and listen for incoming messages.
+        // Make sure the socket has finished connecting first.
         Socket.prototype.bind = function(channel, fn) {
             this.socket.channel = channel;
             var that = this;
@@ -89,6 +83,7 @@ goatee.VERSION = '0.1.0';
             };
         };
 
+        // Send data to the given websocket.
         Socket.prototype.send = function(data) {
             this.socket.action = "message";
             goatee.util.merge(this.socket, data);
@@ -102,4 +97,13 @@ goatee.VERSION = '0.1.0';
         };
     })('undefined' != typeof goatee ? goatee : (this.goatee = {}), this);
 
-})();
+    this.goatee = goatee;
+}).call(this);
+
+(function() {
+    // Current version
+    goatee.VERSION = '0.1.0';
+
+    // Established socket instances
+    goatee.sockets = [];
+}).call(this);

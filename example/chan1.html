@@ -53,12 +53,7 @@
   <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
   <script src="../js/goatee.js"></script>
   <script>
-    var gt = goatee.connect('ws://localhost:1235/');
-    msg = {
-      date: new Date(),
-      payload: "Hey man!",
-      token: 'ABC#324Dsaf3EFE'
-    };
+    var gt = new goatee('ws://localhost:1235/');
     gt.bind('chan8', function(data) {
       $('#ws').append('<p>' + data.data + '</p>');
       $('#msg').val('');
