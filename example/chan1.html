@@ -54,7 +54,7 @@
   <script src="../js/goatee.js"></script>
   <script>
     var gt = new goatee('ws://localhost:1235/');
-    gt.bind('chan8', function(data) {
+    gt.bind('chan1', function(data) {
       $('#ws').append('<p>' + data.data + '</p>');
       $('#msg').val('');
     });
