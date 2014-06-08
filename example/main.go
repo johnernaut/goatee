@@ -10,7 +10,7 @@ import (
 func main() {
 	go httpServer()
 
-	err := goatee.CreateServer([]string{"chan1", "chan2"})
+	err := goatee.CreateServer([]string{"chan[12]"})
 
 	if err != nil {
 		log.Fatal("Error: ", err.Error())

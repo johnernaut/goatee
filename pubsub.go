@@ -58,7 +58,7 @@ func NewRedisClient(host string, sub []string) (*RedisClient, error) {
 
 	// subscribe to default channels
 	for _, k := range sub {
-		client.Subscribe(k)
+		client.PSubscribe(k)
 	}
 
 	h.rclient = &client

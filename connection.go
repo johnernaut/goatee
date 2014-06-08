@@ -57,7 +57,7 @@ func (c *connection) reader() {
 		case "message":
 			d, err := json.Marshal(wclient)
 			if err != nil {
-				log.Println("Error marsahling json for publish: ", err)
+				log.Println("Error marshaling json for publish: ", err)
 			}
 
 			_, err = h.rconn.Do("PUBLISH", wclient.Channel, d)
