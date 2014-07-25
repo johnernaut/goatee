@@ -51,80 +51,20 @@
     </form>
   </body>
   <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script src="../js/goatee.js"></script>
   <script>
-    $(function() {
-
-      var ws;
-      var msg = $("#msg");
-      var log = $("#log");
-
-      function appendLog(msg) {
-          var d = log[0]
-          var doScroll = d.scrollTop == d.scrollHeight - d.clientHeight;
-          msg.appendTo(log)
-          if (doScroll) {
-              d.scrollTop = d.scrollHeight - d.clientHeight;
-          }
-      }
-
-      $("#form").submit(function() {
-        if (!ws) {
-            return false;
-        }
-        if (!msg.val()) {
-            return false;
-        }
-
-        ws.send(messageFormat(msg.val()));
-        msg.val("");
-        return false
-      });
-
-      function messageFormat(msg) {
-        now = new Date();
-        messageObject = {
-          channel: "chan2",
-          action: "bind",
-          date: new Date(now.getTime()),
-          payload: msg,
-          token: "token yo"
-        }
-        return JSON.stringify(messageObject);
-      }
-
-      var ws = new WebSocket("ws://localhost:1235/");
-      if(ws) {
-        ws.onopen = function() {
-          console.log('opened!');
-        }
-        ws.onclose = function(e) {
-          console.log('closed!' + e.code);
-        }
-        ws.onerror = function(error) {
-          console.log("Error: " + error);
-        }
-        ws.onmessage = function(e) {
-          $('#ws').append('<li>' + e.data + '</li>');
-        }
-      } else {
-        $(document).ready(function() {
-          (function longPoll(){
-            console.log("Polling...");
-            $.ajax({
-                url: "http://localhost:1235/?" + (new Date().getTime()),
-                success: function(data){
-                  $('#ws').append("<li>" + data + "</li>");
-                },
-                error: function(x, s, t) {
-                  console.log("Error: " + s + " " + t)
-                },
-                type: "GET",
-                complete: longPoll,
-                timeout: 30000 // timeout every thirty seconds
-            });
-          })();
-        });
-      }
+    var gt = new goatee('ws://localhost:1235/');
+    gt.bind('chan8', function(data) {
+      $('#ws').append('<p>' + data.data + '</p>');
+      $('#msg').val('');
     });
+
+    dta = {};
+
+    $('#form').submit(function(e) {
+      e.preventDefault();
+      dta.payload = $('#msg').val();
+      gt.send(dta);
+    })
   </script>
 </html>

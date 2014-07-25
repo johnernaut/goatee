@@ -2,11 +2,12 @@ package goatee
 
 import (
 	"encoding/json"
-	"github.com/garyburd/redigo/redis"
 	"log"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/garyburd/redigo/redis"
 )
 
 type Message struct {
@@ -31,7 +32,7 @@ type Client interface {
 	Receive() (message Message)
 }
 
-func NewRedisClient(host string, sub []string) (*RedisClient, error) {
+func NewRedisClient(host string) (*RedisClient, error) {
 	conn, err := redis.Dial("tcp", host)
 	if err != nil {
 		log.Printf("Error dialing redis pubsub: %s", err)
@@ -56,11 +57,6 @@ func NewRedisClient(host string, sub []string) (*RedisClient, error) {
 
 	go client.PubsubHub()
 
-	// subscribe to default channels
-	for _, k := range sub {
-		client.Subscribe(k)
-	}
-
 	h.rclient = &client
 	h.rconn = conn
 
@@ -82,11 +78,12 @@ func (client *RedisClient) PubsubHub() {
 	for {
 		message := client.Receive()
 		if message.Type == "message" {
-			log.Println(string(message.Data))
 			err := json.Unmarshal(message.Data, &data)
 			if err != nil {
 				log.Println("Error parsing payload JSON: ", err)
 			}
+
+			data.Channel = message.Channel
 
 			h.broadcast <- &data
 			if DEBUG {

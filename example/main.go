@@ -1,16 +1,17 @@
 package main
 
 import (
-	"github.com/johnernaut/goatee"
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/johnernaut/goatee"
 )
 
 func main() {
 	go httpServer()
 
-	err := goatee.CreateServer([]string{"chan1", "chan2"})
+	err := goatee.CreateServer()
 
 	if err != nil {
 		log.Fatal("Error: ", err.Error())

@@ -1,8 +1,8 @@
 package goatee
 
-func CreateServer(redisub []string) error {
+func CreateServer() error {
 	conf := LoadConfig("config/")
-	client, err := NewRedisClient(conf.Redis.Host, redisub)
+	client, err := NewRedisClient(conf.Redis.Host)
 	if err != nil {
 		return err
 	}
