@@ -17,6 +17,7 @@ type Message struct {
 }
 
 type Data struct {
+	Channel   string `json:"channel"`
 	Payload   string `json:"payload"`
 	CreatedAt string `json:"created_at"`
 }
