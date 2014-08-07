@@ -5,7 +5,7 @@ A Redis-backed notification server written in Go.
 
 [![Build Status](https://travis-ci.org/johnernaut/goatee.png?branch=master)](https://travis-ci.org/johnernaut/goatee)
 
-**Note:** This project is *alphaware*.  For the time being, it's API is bound to change as features are continually added and enhancements are made.
+**Client library:** [goatee.js](https://github.com/johnernaut/goatee.js)
 
 ##Installation
 `go get github.com/johnernaut/goatee`
@@ -13,7 +13,7 @@ A Redis-backed notification server written in Go.
 `import "github.com/johnernaut/goatee"`
 
 ##Usage
-**goatee** works by listening on a channel via [Redis Pub/Sub](http://redis.io/topics/pubsub) and then sending the received message to connected clients via [WebSockets](http://en.wikipedia.org/wiki/WebSocket) and has fallback support for **long polling**.
+**goatee** works by listening on a channel via [Redis Pub/Sub](http://redis.io/topics/pubsub) and then sending the received message to connected clients via [WebSockets](http://en.wikipedia.org/wiki/WebSocket).  Clients may create channels to listen on by using the [goatee client library](https://github.com/johnernaut/goatee.js).
 
 ### Configuration
 **goatee** will look for a JSON configuration file in a `config` folder at the root of your project with the following names based on your environment: `development.json`, `production.json`, `etc`.  By default `config/development.json` will be used but you can also specify a `GO_ENV` environment variable and the name of that will be used instead.
@@ -43,7 +43,7 @@ import (
 
 func main() {
     // subscribe to one or many redis channels
-    err := goatee.CreateServer([]string{"achannel", "anotherchannel"})
+    err := goatee.CreateServer()
 
     if err != nil {
         log.Fatal("Error: ", err.Error())
@@ -52,36 +52,15 @@ func main() {
 ```
 ========
 #### Client
-```html
-<!doctype html>
-<html>
-  <head><title>goatee</title></head>
-  <body>
-    <h1>Websocket Messages:</h1>
-    <ul id="ws">
-    </ul>
-  </body>
-  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-  <script>
-    var ws = new WebSocket("ws://localhost:1235/"); // based on the websocket host set in your config file
-    ws.onopen = function() {
-      console.log('opened!');
-    }
-    ws.onclose = function(e) {
-      console.log('closed!' + e.code);
-    }
-    ws.onerror = function(error) {
-      console.log("Error: " + error);
-    }
-    ws.onmessage = function(e) {
-      $('#ws').append('<li>' + e.data + '</li>');
-    }
-  </script>
-</html>
-```
+An example of how to use the [goatee client library](https://github.com/johnernaut/goatee.js) can be found in the `examples` folder.
+
 ========
 #### Redis
-With **goatee** running and your web browser connected to the socket, you should now be able to test message sending from Redis to your client (browser).  Run `redis-cli` and publish a message to the channel you subscribed to in your Go server.  E.x. `publish 'mychannel' 'mymessage'`
+With **goatee** running and your web browser connected to the socket, you should now be able to test message sending from Redis to your client (browser).  Run `redis-cli` and publish a message to the channel you subscribed to in your Go server.  By default, **goatee** expects your Redis messages to have a specified JSON format to send to the client with the following details:
+* `payload`
+* `created_at (optional)`
+
+E.x. `publish 'mychannel' '{"payload": "mymessage which is a string, etc."}'`
 
 ## Tests
 `go test github.com/johnernaut/goatee`
