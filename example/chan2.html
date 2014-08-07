@@ -51,20 +51,19 @@
     </form>
   </body>
   <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-  <script src="../js/goatee.js"></script>
+  <script src="./js/goatee.js"></script>
   <script>
-    var gt = new goatee('ws://localhost:1235/');
-    gt.bind('chan8', function(data) {
-      $('#ws').append('<p>' + data.data + '</p>');
-      $('#msg').val('');
-    });
+    var gt = new goatee("ABC123LOLDU", "ws://localhost:1235/");
 
-    dta = {};
+    gt.bind('chan1', function(data) {
+        $('#ws').append('<p>' + data.data + '</p>');
+        $('#msg').val('');
+    });
 
     $('#form').submit(function(e) {
       e.preventDefault();
-      dta.payload = $('#msg').val();
-      gt.send(dta);
-    })
+      msg = $('#msg').val();
+      gt.emit('chan1', msg);
+    });
   </script>
 </html>

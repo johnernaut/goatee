@@ -57,7 +57,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		LongPoll(w, r)
 		return
 	} else if err != nil {
-		log.Printf("WsHandler error: ", err.Error())
+		log.Printf("WsHandler error: %s", err.Error())
 		return
 	}
 
