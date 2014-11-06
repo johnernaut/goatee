@@ -3,23 +3,32 @@ package goatee
 import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/websocket"
-	"io"
 	"log"
 	"net/http"
-	"time"
 )
+
+// type AuthFunc func(req *http.Request) bool
 
 type sockethub struct {
 	// registered connections
 	connections map[*connection]bool
+
 	// inbound messages from connections
 	broadcast chan *Data
+
 	// register requests from connection
 	register chan *connection
+
 	// unregister request from connection
 	unregister chan *connection
-	rclient    *RedisClient
-	rconn      redis.Conn
+
+	// copy of the redis client
+	rclient *RedisClient
+
+	// copy of the redis connection
+	rconn redis.Conn
+
+	Auth func(req *http.Request) bool
 }
 
 var h = sockethub{
@@ -29,44 +38,33 @@ var h = sockethub{
 	connections: make(map[*connection]bool),
 }
 
-func LongPoll(w http.ResponseWriter, r *http.Request) {
-	c := &connection{send: make(chan *Data)}
-	h.register <- c
+func (h *sockethub) WsHandler(w http.ResponseWriter, r *http.Request) {
+	var authenticated bool
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	cn, _ := w.(http.CloseNotifier)
-
-	select {
-	case <-time.After(30e9):
-		io.WriteString(w, "Timeout!\n")
-		h.unregister <- c
-	case <-cn.CloseNotify():
-		h.unregister <- c
-	case msg := <-c.send:
-		io.WriteString(w, msg.Payload)
-		h.unregister <- c
-	}
-}
-
-func WsHandler(w http.ResponseWriter, r *http.Request) {
-	ws, err := websocket.Upgrade(w, r, nil, 1024, 1024)
-
-	if _, ok := err.(websocket.HandshakeError); ok {
-		// http.Error(w, "Not a websocket handshake", 400)
-		LongPoll(w, r)
-		return
-	} else if err != nil {
-		log.Printf("WsHandler error: %s", err.Error())
-		return
+	if h.Auth != nil {
+		authenticated = h.Auth(r)
 	}
 
-	c := &connection{send: make(chan *Data), ws: ws}
-	h.register <- c
+	if authenticated {
+		ws, err := websocket.Upgrade(w, r, nil, 1024, 1024)
 
-	defer func() { h.unregister <- c }()
-	go c.writer()
-	c.reader()
+		if _, ok := err.(websocket.HandshakeError); ok {
+			http.Error(w, "Not a websocket handshake", 400)
+			return
+		} else if err != nil {
+			log.Printf("WsHandler error: %s", err.Error())
+			return
+		}
+
+		c := &connection{send: make(chan *Data), ws: ws}
+		h.register <- c
+
+		defer func() { h.unregister <- c }()
+		go c.writer()
+		c.reader()
+	} else {
+		http.Error(w, "Invalid API key", 401)
+	}
 }
 
 func (h *sockethub) Run() {
@@ -94,9 +92,31 @@ func (h *sockethub) Run() {
 	}
 }
 
-func NotificationHub(host string) error {
+func (h *sockethub) RegisterAuthFunc(AuthFunc func(req *http.Request) bool) {
+	aut := AuthFunc
+	h.Auth = aut
+}
+
+func (h *sockethub) StartServer() {
+	conf := LoadConfig("config/")
+	client, err := NewRedisClient(conf.Redis.Host)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer client.Close()
+
 	go h.Run()
-	http.HandleFunc("/", WsHandler)
-	log.Println("Starting server on: ", host)
-	return http.ListenAndServe(host, nil)
+
+	http.HandleFunc("/", h.WsHandler)
+	log.Println("Starting server on: ", conf.Web.Host)
+
+	err = http.ListenAndServe(conf.Web.Host, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func CreateServer() sockethub {
+	return h
 }

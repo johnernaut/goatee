@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 
@@ -9,25 +8,19 @@ import (
 )
 
 func main() {
-	go httpServer()
-
-	err := goatee.CreateServer()
-
-	if err != nil {
-		log.Fatal("Error: ", err.Error())
-	}
+	server := goatee.CreateServer()
+	server.RegisterAuthFunc(Authenticate)
+	server.StartServer()
 }
 
-func testHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("chan1.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-	tmpl.Execute(w, nil)
-}
+func Authenticate(req *http.Request) bool {
+	vals := req.URL.Query()
 
-func httpServer() {
-	log.Print("starting http server...")
-	http.HandleFunc("/test", testHandler)
-	log.Fatal(http.ListenAndServe(":1236", nil))
+	if vals.Get("api_key") == "ABC123" {
+		log.Println(vals.Get("api_key"))
+
+		return true
+	}
+
+	return false
 }
