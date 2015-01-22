@@ -98,7 +98,7 @@ func (h *sockethub) RegisterAuthFunc(AuthFunc func(req *http.Request) bool) {
 }
 
 func (h *sockethub) StartServer() {
-	conf := LoadConfig("config/")
+	conf := LoadConfig("config")
 	client, err := NewRedisClient(conf.Redis.Host)
 	if err != nil {
 		log.Fatal(err)
