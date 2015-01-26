@@ -27,5 +27,5 @@ func setupRedisConnection(t *testing.T) *RedisClient {
 }
 
 func setupConfig(t *testing.T) {
-	LoadConfig("fixture/")
+	LoadConfig("fixture")
 }
