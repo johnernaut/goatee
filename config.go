@@ -47,7 +47,6 @@ func LoadConfig(path string) *configuration {
     // Try to find a config file to use
     found := false
     for _, path := range(paths) {
-        log.Printf(path)
         file, err = ioutil.ReadFile(path + string(os.PathSeparator) + getEnv() + ".json")
         if err == nil {
             log.Printf("Reading configuration from: %s", path)
