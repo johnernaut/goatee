@@ -1,10 +1,11 @@
 package goatee
 
 import (
-	"github.com/garyburd/redigo/redis"
-	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+
+	"github.com/gomodule/redigo/redis"
+	"github.com/gorilla/websocket"
 )
 
 // type AuthFunc func(req *http.Request) bool
