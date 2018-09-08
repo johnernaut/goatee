@@ -3,7 +3,7 @@ go: 1.2
 services:
   - redis-server
 install:
-  - go get -v github.com/garyburd/redigo/redis
+  - go get -v github.com/gomodule/redigo/redis
   - go get -v github.com/gorilla/websocket
 script:
   - go test github.com/johnernaut/goatee
