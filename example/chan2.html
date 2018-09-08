@@ -53,7 +53,7 @@
   <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
   <script src="./js/goatee.js"></script>
   <script>
-    var gt = new goatee("ABC123LOLDU", "ws://localhost:1235/");
+    var gt = new goatee("ABC123", "ws://localhost:1235/");
 
     gt.bind('chan1', function(data) {
         $('#ws').append('<p>' + data.data + '</p>');
