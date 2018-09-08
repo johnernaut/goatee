@@ -7,12 +7,12 @@ A Redis-backed notification server written in Go.
 
 **Client library:** [goatee.js](https://github.com/johnernaut/goatee.js)
 
-##Installation
+## Installation
 `go get github.com/johnernaut/goatee`
 
 `import "github.com/johnernaut/goatee"`
 
-##Usage
+## Usage
 **goatee** works by listening on a channel via [Redis Pub/Sub](http://redis.io/topics/pubsub) and then sending the received message to connected clients via [WebSockets](http://en.wikipedia.org/wiki/WebSocket).  Clients may create channels to listen on by using the [goatee client library](https://github.com/johnernaut/goatee.js).
 
 ### Configuration
@@ -31,8 +31,7 @@ A Redis-backed notification server written in Go.
 }
 ```
 
-======
-#### Server
+### Server
 ```go
 package main
 
@@ -50,12 +49,12 @@ func main() {
     }
 }
 ```
-========
-#### Client
+
+### Client
 An example of how to use the [goatee client library](https://github.com/johnernaut/goatee.js) can be found in the `examples` folder.
 
-========
-#### Redis
+
+### Redis
 With **goatee** running and your web browser connected to the socket, you should now be able to test message sending from Redis to your client (browser).  Run `redis-cli` and publish a message to the channel you subscribed to in your Go server.  By default, **goatee** expects your Redis messages to have a specified JSON format to send to the client with the following details:
 * `payload`
 * `created_at (optional)`
